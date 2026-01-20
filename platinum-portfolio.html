@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Platinum Channel Paper Trading Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --border-color: #2d3a4f;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-gold: #d4af37;
+            --accent-gold-light: #f4d03f;
+            --positive: #10b981;
+            --negative: #ef4444;
+            --info-blue: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Subtle grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--bg-primary);
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .status-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--positive);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        }
+
+        .last-updated {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .refresh-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--accent-gold);
+        }
+
+        .refresh-btn.loading svg {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Main content area */
+        .content-wrapper {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-header {
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .content-header h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent-gold);
+            border-radius: 2px;
+        }
+
+        .auto-refresh-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background: var(--text-secondary);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+            background: var(--bg-primary);
+        }
+
+        /* Spreadsheet embed container */
+        .spreadsheet-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 280px);
+            min-height: 500px;
+        }
+
+        .spreadsheet-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-card);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-info {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .footer-info a {
+            color: var(--accent-gold);
+            text-decoration: none;
+        }
+
+        .footer-info a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .footer-badge svg {
+            color: var(--accent-gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .status-section {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+
+            .spreadsheet-container {
+                height: calc(100vh - 350px);
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <div class="logo-icon">PC</div>
+                <div class="logo-text">
+                    <h1>Platinum Channel</h1>
+                    <p>2026 Paper Trading Portfolio</p>
+                </div>
+            </div>
+            <div class="status-section">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    <span>Live Data</span>
+                </div>
+                <div class="last-updated" id="lastUpdated">
+                    Loading...
+                </div>
+                <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2v6h-6"></path>
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                        <path d="M3 22v-6h6"></path>
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <h2>Portfolio Positions</h2>
+                <div class="auto-refresh-toggle">
+                    <span>Auto-refresh (60s)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoRefreshToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="spreadsheet-container">
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Loading portfolio data...</div>
+                </div>
+                <iframe 
+                    id="spreadsheetFrame"
+                    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQEgRwOZU0WHMmOM1QIA_qplRNheMrHyZZhYVr7ZGmSEqrbCPhxYW4yDL4h54giDJW4gTzQAkIIxqnC/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"
+                    onload="hideLoading()"
+                ></iframe>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-info">
+                Data source: <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQEgRwOZU0WHMmOM1QIA_qplRNheMrHyZZhYVr7ZGmSEqrbCPhxYW4yDL4h54giDJW4gTzQAkIIxqnC/pubhtml?gid=0&single=true" target="_blank">Kerry's Tell Sheet</a> • Updates automatically when Google Sheet changes
+            </div>
+            <div class="footer-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                Powered by Google Sheets
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+        const REFRESH_INTERVAL = 60000; // 60 seconds
+
+        // Update timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            const options = { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true 
+            };
+            document.getElementById('lastUpdated').textContent = 
+                'Updated: ' + now.toLocaleDateString('en-US', options);
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            updateTimestamp();
+        }
+
+        // Refresh spreadsheet data
+        function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            const frame = document.getElementById('spreadsheetFrame');
+            const overlay = document.getElementById('loadingOverlay');
+            
+            btn.classList.add('loading');
+            overlay.classList.remove('hidden');
+            
+            // Reload iframe by resetting src with cache buster
+            const baseUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEgRwOZU0WHMmOM1QIA_qplRNheMrHyZZhYVr7ZGmSEqrbCPhxYW4yDL4h54giDJW4gTzQAkIIxqnC/pubhtml?gid=0&single=true&widget=true&headers=false';
+            frame.src = baseUrl + '&t=' + Date.now();
+            
+            // Remove loading class after animation
+            setTimeout(() => {
+                btn.classList.remove('loading');
+            }, 1000);
+        }
+
+        // Toggle auto-refresh
+        function toggleAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            
+            if (toggle.checked) {
+                autoRefreshInterval = setInterval(refreshData, REFRESH_INTERVAL);
+                console.log('Auto-refresh enabled');
+            } else {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                console.log('Auto-refresh disabled');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up auto-refresh toggle listener
+            document.getElementById('autoRefreshToggle').addEventListener('change', toggleAutoRefresh);
+            
+            // Start auto-refresh if toggle is checked by default
+            if (document.getElementById('autoRefreshToggle').checked) {
+                autoRefreshInterval = setInterval(refreshData, REFRESH_INTERVAL);
+            }
+            
+            // Initial timestamp
+            updateTimestamp();
+        });
+    </script>
+</body>
+</html>
